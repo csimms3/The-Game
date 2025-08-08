@@ -1,0 +1,6 @@
+2025-08-08 01:14:46,551 - the_game - INFO - Starting The Game - Roguelike Adventure
+2025-08-08 01:14:47,183 - the_game - INFO - Game engine initialized
+2025-08-08 01:14:47,184 - the_game - INFO - Starting game loop
+2025-08-08 01:14:53,664 - the_game - INFO - Changing state from menu to game
+2025-08-08 01:14:53,664 - the_game - INFO - Entering game state
+2025-08-08 01:14:53,664 - the_game - ERROR - Game crashed with error: 'HUD' object has no attribute 'add_message'

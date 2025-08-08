@@ -1,0 +1,5 @@
+2025-08-08 01:14:13,455 - the_game - INFO - Game engine initialized
+2025-08-08 01:14:13,455 - the_game - INFO - Starting game loop
+2025-08-08 01:14:15,537 - the_game - INFO - Changing state from menu to game
+2025-08-08 01:14:15,537 - the_game - INFO - Entering game state
+2025-08-08 01:14:15,537 - the_game - ERROR - Game crashed with error: 'WorldGenerator' object has no attribute 'width'

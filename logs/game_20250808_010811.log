@@ -1,0 +1,5 @@
+2025-08-08 01:08:11,870 - the_game - INFO - Game engine initialized
+2025-08-08 01:08:11,870 - the_game - INFO - Starting game loop
+2025-08-08 01:08:12,997 - the_game - INFO - Changing state from menu to game
+2025-08-08 01:08:12,998 - the_game - INFO - Entering game state
+2025-08-08 01:08:14,484 - the_game - INFO - Game loop ended

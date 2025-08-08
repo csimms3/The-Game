@@ -12,6 +12,8 @@ from game.world.world_generator import WorldGenerator
 from game.items.item import ItemFactory
 from game.ui.hud import HUD
 from game.ui.inventory import InventoryUI
+from game.effects.particles import ParticleSystem
+from game.utils.spatial_hash import RenderOptimizer
 import random
 
 class GameState(BaseState):
@@ -43,6 +45,10 @@ class GameState(BaseState):
         self.hud = HUD(self.settings)
         self.inventory_ui = InventoryUI(self.settings)
         
+        # Effects and optimization
+        self.particle_system = ParticleSystem(self.settings)
+        self.render_optimizer = RenderOptimizer(self.settings)
+        
         # Input
         self.keys_pressed = set()
         
@@ -55,6 +61,18 @@ class GameState(BaseState):
         # Messages
         self.messages = []
         self.message_timer = 0
+        
+        # Initialize spatial optimization
+        self._initialize_spatial_optimization()
+    
+    def _initialize_spatial_optimization(self):
+        """Initialize spatial optimization for entities"""
+        # Add player to spatial hash
+        self.render_optimizer.add_entity(self.player)
+        
+        # Add initial enemies
+        for enemy in self.enemies:
+            self.render_optimizer.add_entity(enemy)
     
     def enter(self):
         """Called when entering game state"""
@@ -101,11 +119,17 @@ class GameState(BaseState):
         # Update camera to follow player
         self._update_camera()
         
+        # Update spatial optimization
+        self.render_optimizer.update_visible_entities(self.camera_x, self.camera_y)
+        
         # Update enemies
         self._update_enemies(dt)
         
         # Update enemy spawner
         self.enemy_spawner.update(dt, self.enemies, self.player.get_center())
+        
+        # Update particle system
+        self.particle_system.update(dt)
         
         # Update combat
         if self.combat_cooldown > 0:
@@ -126,13 +150,17 @@ class GameState(BaseState):
         # Render world
         self.world_generator.render_world(screen, (self.camera_x, self.camera_y))
         
-        # Render enemies
+        # Render visible enemies (optimized)
+        visible_entities = self.render_optimizer.get_visible_entities()
         for enemy in self.enemies:
-            if enemy.alive:
+            if enemy.alive and enemy in visible_entities:
                 enemy.render(screen, (self.camera_x, self.camera_y))
         
         # Render player
         self.player.render(screen, (self.camera_x, self.camera_y))
+        
+        # Render particles
+        self.particle_system.render(screen, (self.camera_x, self.camera_y))
         
         # Render HUD
         self._render_hud(screen)
@@ -179,6 +207,12 @@ class GameState(BaseState):
     def _update_enemies(self, dt: float):
         """Update all enemies"""
         # Remove dead enemies
+        dead_enemies = [enemy for enemy in self.enemies if not enemy.alive]
+        for enemy in dead_enemies:
+            self.render_optimizer.remove_entity(enemy)
+            # Create death effect
+            self.particle_system.create_explosion_effect(enemy.x, enemy.y, 0.5)
+        
         self.enemies = [enemy for enemy in self.enemies if enemy.alive]
         
         # Update each enemy
@@ -193,6 +227,8 @@ class GameState(BaseState):
             if enemy.is_colliding_with(self.player):
                 if enemy.attack_cooldown <= 0:
                     enemy._attack_target()
+                    # Create damage effect on player
+                    self.particle_system.create_damage_effect(self.player.x, self.player.y, 10)
     
     def _spawn_enemy(self):
         """Spawn a new enemy"""
@@ -207,6 +243,7 @@ class GameState(BaseState):
         if self.world_generator.is_walkable_at(spawn_x, spawn_y):
             enemy = Enemy(spawn_x, spawn_y, self.settings)
             self.enemies.append(enemy)
+            self.render_optimizer.add_entity(enemy)
     
     def _attack_nearest_enemy(self):
         """Attack the nearest enemy"""
@@ -228,11 +265,19 @@ class GameState(BaseState):
                 self.combat_cooldown = 0.5
                 self._add_message(f"Attacked {nearest_enemy.enemy_type}!")
                 
+                # Create combat effect
+                self.particle_system.create_combat_effect(nearest_enemy.x, nearest_enemy.y, "slash")
+                
                 # Check if enemy died
                 if not nearest_enemy.alive:
                     self.score += 10
                     self.player.gain_experience(20)
                     self._add_message(f"Defeated {nearest_enemy.enemy_type}! +20 XP")
+                    
+                    # Create level up effect if player leveled up
+                    if self.player.level > getattr(self, '_last_level', 0):
+                        self.particle_system.create_level_up_effect(self.player.x, self.player.y)
+                        self._last_level = self.player.level
     
     def _pickup_nearby_items(self):
         """Pickup items near the player"""
@@ -247,6 +292,11 @@ class GameState(BaseState):
                 if self.player.add_item_to_inventory(item_data['item']):
                     items_to_remove.append(item_data)
                     self._add_message(f"Picked up {item_data['item'].name}!")
+                    
+                    # Create pickup effect
+                    self.particle_system.create_item_pickup_effect(
+                        item_data['x'], item_data['y'], item_data['item'].rarity
+                    )
                 else:
                     self._add_message("Inventory full!")
         

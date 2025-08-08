@@ -4,46 +4,55 @@ Game settings and configuration
 
 import os
 from dataclasses import dataclass
-from typing import Tuple
 
 @dataclass
 class Settings:
     """Game settings and configuration"""
     
     # Display settings
-    SCREEN_WIDTH: int = 1280
-    SCREEN_HEIGHT: int = 720
+    SCREEN_WIDTH: int = 1200
+    SCREEN_HEIGHT: int = 800
     FPS: int = 60
-    TITLE: str = "The Game - Roguelike Adventure"
+    TILE_SIZE: int = 32
+    
+    # Player settings
+    PLAYER_SPEED: float = 200.0
+    PLAYER_HEALTH: int = 100
+    PLAYER_ATTACK_POWER: int = 15
+    PLAYER_DEFENSE: int = 5
+    
+    # Enemy settings
+    ENEMY_SPEED: float = 100.0
+    ENEMY_HEALTH: int = 50
+    ENEMY_ATTACK_POWER: int = 10
+    ENEMY_DEFENSE: int = 2
     
     # Game settings
-    TILE_SIZE: int = 32
-    PLAYER_SPEED: float = 3.0
-    ENEMY_SPEED: float = 1.5
+    DEBUG_MODE: bool = False
+    GAME_MODE: str = "campaign"  # "campaign" or "open_world"
     
     # Colors
-    BLACK: Tuple[int, int, int] = (0, 0, 0)
-    WHITE: Tuple[int, int, int] = (255, 255, 255)
-    RED: Tuple[int, int, int] = (255, 0, 0)
-    GREEN: Tuple[int, int, int] = (0, 255, 0)
-    BLUE: Tuple[int, int, int] = (0, 0, 255)
-    GRAY: Tuple[int, int, int] = (128, 128, 128)
-    DARK_GRAY: Tuple[int, int, int] = (64, 64, 64)
-    LIGHT_GRAY: Tuple[int, int, int] = (192, 192, 192)
+    BLACK: tuple = (0, 0, 0)
+    WHITE: tuple = (255, 255, 255)
+    RED: tuple = (255, 0, 0)
+    GREEN: tuple = (0, 255, 0)
+    BLUE: tuple = (0, 0, 255)
+    YELLOW: tuple = (255, 255, 0)
+    GRAY: tuple = (128, 128, 128)
+    LIGHT_GRAY: tuple = (200, 200, 200)
+    DARK_GRAY: tuple = (64, 64, 64)
     
     # Asset paths
     ASSETS_DIR: str = "assets"
-    SPRITES_DIR: str = os.path.join(ASSETS_DIR, "sprites")
-    SOUNDS_DIR: str = os.path.join(ASSETS_DIR, "sounds")
-    MUSIC_DIR: str = os.path.join(ASSETS_DIR, "music")
-    MAPS_DIR: str = os.path.join(ASSETS_DIR, "maps")
-    
-    # Game modes
-    MODE_CAMPAIGN: str = "campaign"
-    MODE_OPEN_WORLD: str = "open_world"
+    SOUNDS_DIR: str = "assets/sounds"
+    MUSIC_DIR: str = "assets/music"
+    IMAGES_DIR: str = "assets/images"
+    FONTS_DIR: str = "assets/fonts"
     
     def __post_init__(self):
-        """Ensure directories exist"""
-        for directory in [self.ASSETS_DIR, self.SPRITES_DIR, 
-                         self.SOUNDS_DIR, self.MUSIC_DIR, self.MAPS_DIR]:
-            os.makedirs(directory, exist_ok=True)
+        """Create asset directories if they don't exist"""
+        os.makedirs(self.ASSETS_DIR, exist_ok=True)
+        os.makedirs(self.SOUNDS_DIR, exist_ok=True)
+        os.makedirs(self.MUSIC_DIR, exist_ok=True)
+        os.makedirs(self.IMAGES_DIR, exist_ok=True)
+        os.makedirs(self.FONTS_DIR, exist_ok=True)

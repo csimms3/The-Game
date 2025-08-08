@@ -75,8 +75,11 @@ class SoundManager:
             # Convert to 16-bit integer
             tone = (tone * 32767).astype(np.int16)
             
-            # Create pygame sound from array
-            sound = pygame.sndarray.make_sound(tone)
+            # Create stereo array (2D array for left and right channels)
+            stereo_tone = np.column_stack((tone, tone))
+            
+            # Create pygame sound from stereo array
+            sound = pygame.sndarray.make_sound(stereo_tone)
             
             self.sounds[name] = sound
         except Exception as e:

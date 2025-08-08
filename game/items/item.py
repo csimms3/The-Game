@@ -200,3 +200,36 @@ class ItemFactory:
             return ItemFactory.create_random_armor(level)
         else:
             return ItemFactory.create_random_consumable()
+    
+    @staticmethod
+    def create_item(item_name: str) -> Optional[Item]:
+        """Create a specific item by name"""
+        item_definitions = {
+            # Weapons
+            "Rusty Sword": lambda: Weapon("Rusty Sword", 5, "common"),
+            "Iron Sword": lambda: Weapon("Iron Sword", 8, "uncommon"),
+            "Steel Sword": lambda: Weapon("Steel Sword", 12, "rare"),
+            "Magic Sword": lambda: Weapon("Magic Sword", 18, "epic"),
+            "Legendary Blade": lambda: Weapon("Legendary Blade", 25, "legendary"),
+            
+            # Armor
+            "Leather Armor": lambda: Armor("Leather Armor", 3, 10, "common"),
+            "Chain Mail": lambda: Armor("Chain Mail", 5, 20, "uncommon"),
+            "Plate Armor": lambda: Armor("Plate Armor", 8, 30, "rare"),
+            "Magic Armor": lambda: Armor("Magic Armor", 12, 50, "epic"),
+            "Dragon Scale": lambda: Armor("Dragon Scale", 15, 80, "legendary"),
+            
+            # Consumables
+            "Health Potion": lambda: Consumable("Health Potion", "heal", 50, "common"),
+            "Magic Potion": lambda: Consumable("Magic Potion", "heal", 100, "uncommon"),
+            "Strength Potion": lambda: Consumable("Strength Potion", "speed", 2, "rare"),
+            "Greater Health Potion": lambda: Consumable("Greater Health Potion", "heal", 100, "uncommon"),
+            "Speed Potion": lambda: Consumable("Speed Potion", "speed", 2, "common"),
+            "Elixir of Life": lambda: Consumable("Elixir of Life", "heal", 200, "epic")
+        }
+        
+        if item_name in item_definitions:
+            return item_definitions[item_name]()
+        else:
+            # Return a default health potion if item not found
+            return Consumable("Health Potion", "heal", 50, "common")

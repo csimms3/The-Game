@@ -159,7 +159,7 @@ class Player(Entity):
         target.take_damage(damage)
         
         # Set cooldown
-        self.attack_cooldown = 0.5
+        self.attack_cooldown = 0.2  # Reduced from 0.5 to 0.2 seconds
         
         return True
     

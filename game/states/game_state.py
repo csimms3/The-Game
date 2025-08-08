@@ -258,39 +258,20 @@ class GameState(BaseState):
     
     def update(self, dt):
         """Update game state"""
-        # Clear just pressed/released keys
-        self.keys_just_pressed.clear()
-        self.keys_just_released.clear()
-        
         # Update performance tracking
         self._update_performance_tracking(dt)
-        
-        # Update game time
-        self.game_time += dt
-        
-        # Update weather and time
-        self._update_weather_and_time(dt)
-        
-        # Update player
-        self._update_player_input(dt)
-        self.player.update(dt)
-        
-        # Update enemies
-        for enemy in self.enemies[:]:
-            enemy.update(dt)
-            if enemy.health <= 0:
-                self.enemies.remove(enemy)
-                self.stats['enemies_killed'] += 1
-                self._add_message(f"Enemy defeated! +{enemy.experience_value} XP")
-                self.player.gain_experience(enemy.experience_value)
-                self.particle_system.create_death_effect(enemy.x, enemy.y)
-                self.sound_manager.play_combat_sounds("enemy_death")
         
         # Update camera
         self._update_camera(dt)
         
-        # Update particles
-        self.particle_system.update(dt)
+        # Update player input
+        self._update_player_input(dt)
+        
+        # Update enemies
+        self._update_enemies(dt)
+        
+        # Spawn enemies periodically
+        self._spawn_enemies_periodically(dt)
         
         # Update quest progress
         self._update_quest_progress()
@@ -298,24 +279,15 @@ class GameState(BaseState):
         # Update magic and abilities
         self._update_magic_and_abilities(dt)
         
-        # Spawn enemies
-        if len(self.enemies) < 10 and random.random() < 0.01:
-            self._spawn_enemy()
-        
-        # Spawn elite enemies occasionally
-        if len(self.enemies) < 8 and random.random() < 0.005:
-            self._spawn_elite_enemy()
-        
-        # Spawn bosses rarely
-        if len(self.enemies) < 5 and random.random() < 0.001:
-            self._spawn_boss()
+        # Update weather and time
+        self._update_weather_and_time(dt)
         
         # Check achievements
         self._check_achievements()
         
-        # Game over check
-        if self.player.health <= 0:
-            self._game_over()
+        # Update combat cooldown
+        if self.combat_cooldown > 0:
+            self.combat_cooldown -= dt
     
     def _update_player_input(self, dt):
         """Update player input handling"""
@@ -344,11 +316,8 @@ class GameState(BaseState):
         if dx != 0 or dy != 0:
             self.player.move(dx * self.player.speed * dt, dy * self.player.speed * dt)
         
-        # Debug output
-        print(f"Player at ({self.player.x:.0f}, {self.player.y:.0f}) - Keys: W:{keys[pygame.K_w]} A:{keys[pygame.K_a]} S:{keys[pygame.K_s]} D:{keys[pygame.K_d]}")
-        
         if not any([keys[pygame.K_w], keys[pygame.K_a], keys[pygame.K_s], keys[pygame.K_d]]):
-            print("No keys detected - window may not have focus")
+            pass # No keys detected - window may not have focus
     
     def render(self, screen):
         """Render the game with advanced graphics"""
@@ -356,9 +325,9 @@ class GameState(BaseState):
         screen.fill((50, 100, 150))  # Blue background for debugging
         
         # Debug output
-        print(f"Rendering game state - Player at ({self.player.x:.0f}, {self.player.y:.0f})")
-        print(f"Camera at ({self.camera_x:.0f}, {self.camera_y:.0f})")
-        print(f"Enemies: {len(self.enemies)}")
+        # print(f"Rendering game state - Player at ({self.player.x:.0f}, {self.player.y:.0f})")
+        # print(f"Camera at ({self.camera_x:.0f}, {self.camera_y:.0f})")
+        # print(f"Enemies: {len(self.enemies)}")
         
         # Render world directly to screen (bypass lighting for now)
         self.world_generator.render_world(screen, (self.camera_x, self.camera_y))
@@ -501,7 +470,7 @@ class GameState(BaseState):
         self.camera_y = max(0, min(self.camera_y, self.world_generator.world_height - self.settings.SCREEN_HEIGHT))
         
         # Debug: Print camera position
-        print(f"Camera: ({self.camera_x:.0f}, {self.camera_y:.0f}) -> Target: ({target_x:.0f}, {target_y:.0f})")
+        # print(f"Camera: ({self.camera_x:.0f}, {self.camera_y:.0f}) -> Target: ({target_x:.0f}, {target_y:.0f})")
     
     def _update_enemies(self, dt: float):
         """Update all enemies"""
@@ -541,8 +510,17 @@ class GameState(BaseState):
     
     def _spawn_enemy(self):
         """Spawn a basic enemy"""
-        x = random.randint(0, self.world_generator.world_width)
-        y = random.randint(0, self.world_generator.world_height)
+        # Spawn enemy near the player (within 200-400 pixels)
+        spawn_distance = random.uniform(200, 400)
+        spawn_angle = random.uniform(0, 2 * math.pi)
+        
+        x = self.player.x + spawn_distance * math.cos(spawn_angle)
+        y = self.player.y + spawn_distance * math.sin(spawn_angle)
+        
+        # Keep within world bounds
+        x = max(0, min(x, self.world_generator.world_width))
+        y = max(0, min(y, self.world_generator.world_height))
+        
         enemy = Enemy(x, y, self.settings)
         
         # Give enemy patrol points around spawn location
@@ -557,12 +535,23 @@ class GameState(BaseState):
         
         self.enemies.append(enemy)
         self.render_optimizer.add_entity(enemy)
+        print(f"Spawned enemy at ({x:.0f}, {y:.0f}) - Player at ({self.player.x:.0f}, {self.player.y:.0f})")
     
     def _spawn_elite_enemy(self):
         """Spawn an elite enemy"""
         from game.entities.advanced_enemies import EliteEnemy
-        x = random.randint(0, self.world_generator.world_width)
-        y = random.randint(0, self.world_generator.world_height)
+        
+        # Spawn enemy near the player (within 300-500 pixels)
+        spawn_distance = random.uniform(300, 500)
+        spawn_angle = random.uniform(0, 2 * math.pi)
+        
+        x = self.player.x + spawn_distance * math.cos(spawn_angle)
+        y = self.player.y + spawn_distance * math.sin(spawn_angle)
+        
+        # Keep within world bounds
+        x = max(0, min(x, self.world_generator.world_width))
+        y = max(0, min(y, self.world_generator.world_height))
+        
         enemy_types = ["warrior", "archer", "mage", "assassin"]
         enemy_type = random.choice(enemy_types)
         enemy = EliteEnemy(x, y, self.settings, enemy_type)
@@ -580,6 +569,7 @@ class GameState(BaseState):
         self.enemies.append(enemy)
         self.render_optimizer.add_entity(enemy)
         self._add_message(f"Elite {enemy_type.title()} appeared!")
+        print(f"Spawned elite enemy at ({x:.0f}, {y:.0f}) - Player at ({self.player.x:.0f}, {self.player.y:.0f})")
     
     def _spawn_boss(self):
         """Spawn a boss enemy"""
@@ -605,24 +595,42 @@ class GameState(BaseState):
         self._add_message(f"BOSS {boss_type.upper()} has appeared!")
         self.sound_manager.play_combat_sounds("boss_spawn")
     
+    def _spawn_enemies_periodically(self, dt):
+        """Spawn enemies periodically"""
+        # Spawn basic enemies
+        if len(self.enemies) < 15 and random.random() < 0.02:  # 2% chance per frame
+            self._spawn_enemy()
+        
+        # Spawn elite enemies occasionally
+        if len(self.enemies) < 10 and random.random() < 0.01:  # 1% chance per frame
+            self._spawn_elite_enemy()
+        
+        # Spawn bosses rarely
+        if len(self.enemies) < 5 and random.random() < 0.002:  # 0.2% chance per frame
+            self._spawn_boss()
+    
     def _attack_nearest_enemy(self):
         """Attack the nearest enemy"""
         if self.combat_cooldown > 0:
+            print(f"Attack on cooldown: {self.combat_cooldown:.2f}")
             return
         
         nearest_enemy = None
         nearest_distance = float('inf')
         
+        print(f"Checking {len(self.enemies)} enemies for attack...")
         for enemy in self.enemies:
             if enemy.alive:
                 distance = self.player.distance_to(enemy)
+                print(f"Enemy {enemy.enemy_type} at distance {distance:.1f}, attack range: {self.player.attack_range}")
                 if distance < nearest_distance and distance <= self.player.attack_range:
                     nearest_distance = distance
                     nearest_enemy = enemy
         
         if nearest_enemy:
+            print(f"Attacking {nearest_enemy.enemy_type} at distance {nearest_distance:.1f}")
             if self.player.attack(nearest_enemy):
-                self.combat_cooldown = 0.5
+                self.combat_cooldown = 0.2  # Reduced from 0.5 to 0.2 seconds
                 self._add_message(f"Attacked {nearest_enemy.enemy_type}!")
                 self.sound_manager.play_combat_sounds("attack")
                 
@@ -650,6 +658,12 @@ class GameState(BaseState):
                         self.particle_system.create_level_up_effect(self.player.x, self.player.y)
                         self.sound_manager.play_ui_sounds("level_up")
                         self._last_level = self.player.level
+        else:
+            print("No enemies in attack range")
+            print(f"Player at ({self.player.x:.0f}, {self.player.y:.0f})")
+            for enemy in self.enemies[:3]:  # Show first 3 enemies
+                if enemy.alive:
+                    print(f"  Enemy {enemy.enemy_type} at ({enemy.x:.0f}, {enemy.y:.0f}) - distance: {self.player.distance_to(enemy):.1f}")
     
     def _pickup_nearby_items(self):
         """Pickup items near the player"""

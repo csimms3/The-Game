@@ -22,11 +22,14 @@ class Enemy(Entity):
         self.enemy_type = enemy_type
         self.speed = settings.ENEMY_SPEED
         
+        # Combat stats
+        self.attack_power = settings.ENEMY_ATTACK_POWER
+        self.attack_damage = 10
+        
         # AI behavior
         self.detection_range = 150
         self.attack_range = 40
         self.attack_cooldown = 0
-        self.attack_damage = 10
         self.last_attack_time = 0
         
         # Movement

@@ -1,0 +1,6 @@
+2025-08-08 09:02:42,043 - the_game - INFO - Starting The Game - Roguelike Adventure
+2025-08-08 09:02:42,704 - the_game - INFO - Game engine initialized
+2025-08-08 09:02:42,704 - the_game - INFO - Starting game loop
+2025-08-08 09:03:00,995 - the_game - INFO - Changing state from menu to game
+2025-08-08 09:03:00,995 - the_game - INFO - Entering game state
+2025-08-08 09:03:11,462 - the_game - INFO - Game loop ended

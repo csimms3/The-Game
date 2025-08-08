@@ -200,6 +200,9 @@ class GameState(BaseState):
         
         # Add player light source
         self.renderer.add_light_source(self.player.x, self.player.y, "player")
+        
+        # Set initial ambient light
+        self.renderer.set_ambient_light(0.8)  # Start with bright lighting
     
     def exit(self):
         """Called when exiting game state"""
@@ -309,6 +312,12 @@ class GameState(BaseState):
         self.renderer.clear_lights()
         self.renderer.add_light_source(self.player.x, self.player.y, "player")
         
+        # Set ambient light based on time of day
+        if 6 <= self.time_of_day < 18:  # Day
+            self.renderer.set_ambient_light(0.8)  # Brighter during day
+        else:  # Night
+            self.renderer.set_ambient_light(0.4)  # Darker but still visible
+        
         # Update spatial optimization
         self.render_optimizer.update_visible_entities(self.camera_x, self.camera_y)
         
@@ -366,6 +375,9 @@ class GameState(BaseState):
         
         # Render world
         self.world_generator.render_world(world_surface, (self.camera_x, self.camera_y))
+        
+        # Debug: Ensure world is visible by adding a test rectangle
+        pygame.draw.rect(world_surface, (255, 0, 0), (10, 10, 100, 100))  # Red test rectangle
         
         # Render visible enemies (optimized)
         visible_entities = self.render_optimizer.get_visible_entities()

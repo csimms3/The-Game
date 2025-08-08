@@ -14,6 +14,7 @@ class Settings:
     SCREEN_HEIGHT: int = 800
     FPS: int = 60
     TILE_SIZE: int = 32
+    TITLE: str = "The Game - Roguelike Adventure"
     
     # Player settings
     PLAYER_SPEED: float = 200.0
@@ -30,6 +31,8 @@ class Settings:
     # Game settings
     DEBUG_MODE: bool = False
     GAME_MODE: str = "campaign"  # "campaign" or "open_world"
+    MODE_CAMPAIGN: str = "campaign"
+    MODE_OPEN_WORLD: str = "open_world"
     
     # Colors
     BLACK: tuple = (0, 0, 0)

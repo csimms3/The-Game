@@ -66,17 +66,19 @@ class SoundManager:
             
             # Create a simple tone (sine wave)
             import math
-            tone = []
-            for i in range(samples):
-                value = math.sin(2 * math.pi * frequency * i / sample_rate)
-                tone.append(int(value * 32767))
+            import numpy as np
             
-            # Convert to pygame sound
-            sound_array = pygame.sndarray.make_sound(pygame.surfarray.pixels3d(
-                pygame.Surface((len(tone), 1, 3))
-            ))
+            # Generate sine wave
+            t = np.linspace(0, duration, samples, False)
+            tone = np.sin(2 * np.pi * frequency * t)
             
-            self.sounds[name] = sound_array
+            # Convert to 16-bit integer
+            tone = (tone * 32767).astype(np.int16)
+            
+            # Create pygame sound from array
+            sound = pygame.sndarray.make_sound(tone)
+            
+            self.sounds[name] = sound
         except Exception as e:
             print(f"Could not create sound {name}: {e}")
     

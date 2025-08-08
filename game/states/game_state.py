@@ -612,32 +612,26 @@ class GameState(BaseState):
     def _attack_nearest_enemy(self):
         """Attack the nearest enemy"""
         if self.combat_cooldown > 0:
-            print(f"Attack on cooldown: {self.combat_cooldown:.2f}")
             return
         
         nearest_enemy = None
         nearest_distance = float('inf')
         
-        print(f"Checking {len(self.enemies)} enemies for attack...")
         for enemy in self.enemies:
             if enemy.alive:
                 distance = self.player.distance_to(enemy)
-                print(f"Enemy {enemy.enemy_type} at distance {distance:.1f}, attack range: {self.player.attack_range}")
                 if distance < nearest_distance and distance <= self.player.attack_range:
                     nearest_distance = distance
                     nearest_enemy = enemy
         
         if nearest_enemy:
-            print(f"Attacking {nearest_enemy.enemy_type} at distance {nearest_distance:.1f}")
-            if self.player.attack(nearest_enemy):
-                self.combat_cooldown = 0.2  # Reduced from 0.5 to 0.2 seconds
+            print(f"Attacking enemy at distance {nearest_distance:.1f}")
+            attack_success = self.player.attack(nearest_enemy)
+            
+            if attack_success:
+                self.combat_cooldown = 0.2
                 self._add_message(f"Attacked {nearest_enemy.enemy_type}!")
                 self.sound_manager.play_combat_sounds("attack")
-                
-                # Track damage dealt
-                damage_dealt = self.player.attack_power - nearest_enemy.defense
-                if damage_dealt > 0:
-                    self.stats['damage_dealt'] += damage_dealt
                 
                 # Create combat effect
                 self.particle_system.create_combat_effect(nearest_enemy.x, nearest_enemy.y, "slash")
@@ -652,18 +646,8 @@ class GameState(BaseState):
                     self._add_message(f"Defeated {nearest_enemy.enemy_type}! +20 XP")
                     self.sound_manager.play_combat_sounds("enemy_death")
                     self.stats['enemies_killed'] += 1
-                    
-                    # Create level up effect if player leveled up
-                    if self.player.level > getattr(self, '_last_level', 0):
-                        self.particle_system.create_level_up_effect(self.player.x, self.player.y)
-                        self.sound_manager.play_ui_sounds("level_up")
-                        self._last_level = self.player.level
         else:
-            print("No enemies in attack range")
-            print(f"Player at ({self.player.x:.0f}, {self.player.y:.0f})")
-            for enemy in self.enemies[:3]:  # Show first 3 enemies
-                if enemy.alive:
-                    print(f"  Enemy {enemy.enemy_type} at ({enemy.x:.0f}, {enemy.y:.0f}) - distance: {self.player.distance_to(enemy):.1f}")
+            print("No enemies in range")
     
     def _pickup_nearby_items(self):
         """Pickup items near the player"""

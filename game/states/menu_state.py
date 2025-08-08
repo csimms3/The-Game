@@ -62,11 +62,11 @@ class MenuState(BaseState):
         elif self.selected_option == 3:  # Quit
             self.game_engine.quit()
     
-    def update(self):
+    def update(self, dt: float):
         """Update menu animations"""
         # Animate title
         if self.title_y < self.title_target_y:
-            self.title_y += self.animation_speed
+            self.title_y += self.animation_speed * dt * 60  # Scale by dt and FPS
     
     def render(self, screen):
         """Render the menu"""

@@ -59,7 +59,7 @@ class PauseState(BaseState):
         elif self.selected_option == 3:  # Quit
             self.game_engine.quit()
     
-    def update(self):
+    def update(self, dt: float):
         """Update pause state"""
         pass
     

@@ -44,6 +44,9 @@ class GameEngine:
         self.logger.info("Starting game loop")
         
         while self.running:
+            # Calculate delta time
+            dt = self.clock.tick(self.settings.FPS) / 1000.0  # Convert to seconds
+            
             # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -52,7 +55,7 @@ class GameEngine:
                     self.states[self.current_state].handle_event(event)
             
             # Update current state
-            self.states[self.current_state].update()
+            self.states[self.current_state].update(dt)
             
             # Render current state
             self.screen.fill(self.settings.BLACK)
@@ -60,7 +63,6 @@ class GameEngine:
             
             # Update display
             pygame.display.flip()
-            self.clock.tick(self.settings.FPS)
         
         self.logger.info("Game loop ended")
     

@@ -30,7 +30,7 @@ class BaseState(ABC):
         pass
     
     @abstractmethod
-    def update(self):
+    def update(self, dt: float):
         """Update state logic"""
         pass
     

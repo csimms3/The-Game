@@ -10,6 +10,8 @@ from game.entities.player import Player
 from game.entities.enemy import Enemy, EnemySpawner
 from game.world.world_generator import WorldGenerator
 from game.items.item import ItemFactory
+from game.ui.hud import HUD
+from game.ui.inventory import InventoryUI
 import random
 
 class GameState(BaseState):
@@ -37,9 +39,9 @@ class GameState(BaseState):
         self.game_time = 0
         self.score = 0
         
-        # UI
-        self.font = pygame.font.Font(None, 36)
-        self.font_small = pygame.font.Font(None, 24)
+        # UI systems
+        self.hud = HUD(self.settings)
+        self.inventory_ui = InventoryUI(self.settings)
         
         # Input
         self.keys_pressed = set()
@@ -69,6 +71,10 @@ class GameState(BaseState):
     
     def handle_event(self, event):
         """Handle game events"""
+        # Check inventory first
+        if self.inventory_ui.handle_event(event, self.player):
+            return
+        
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.game_engine.change_state('pause')
@@ -77,7 +83,7 @@ class GameState(BaseState):
             elif event.key == pygame.K_e:
                 self._pickup_nearby_items()
             elif event.key == pygame.K_i:
-                self._show_inventory()
+                self.inventory_ui.toggle()
             elif event.key == pygame.K_m:
                 self._show_map()
         
@@ -128,11 +134,34 @@ class GameState(BaseState):
         # Render player
         self.player.render(screen, (self.camera_x, self.camera_y))
         
-        # Render UI
-        self._render_ui(screen)
+        # Render HUD
+        self._render_hud(screen)
         
-        # Render messages
-        self._render_messages(screen)
+        # Render inventory
+        self.inventory_ui.render(screen, self.player)
+    
+    def _render_hud(self, screen):
+        """Render the HUD"""
+        # Health bar
+        self.hud.render_health_bar(screen, self.player.health, self.player.max_health, 10, 10)
+        
+        # Experience bar
+        self.hud.render_exp_bar(screen, self.player.experience, self.player.experience_to_next_level, 10, 35)
+        
+        # Stats panel
+        self.hud.render_stats_panel(screen, self.player, 10, 60)
+        
+        # Minimap
+        self.hud.render_minimap(screen, self.world_generator, self.player, 
+                               (self.camera_x, self.camera_y), 
+                               self.settings.SCREEN_WIDTH - 160, 10)
+        
+        # Message log
+        self.hud.render_message_log(screen, self.messages, 10, 
+                                   self.settings.SCREEN_HEIGHT - 150)
+        
+        # Controls help
+        self.hud.render_controls_help(screen, self.settings.SCREEN_WIDTH - 200, 10)
     
     def _update_camera(self):
         """Update camera to follow player"""
@@ -225,10 +254,6 @@ class GameState(BaseState):
         for item_data in items_to_remove:
             self.items.remove(item_data)
     
-    def _show_inventory(self):
-        """Show inventory (placeholder)"""
-        self._add_message("Inventory: Press I to view items")
-    
     def _show_map(self):
         """Show map (placeholder)"""
         self._add_message("Map: Press M to view world map")
@@ -246,54 +271,3 @@ class GameState(BaseState):
         # Limit message log
         if len(self.messages) > 5:
             self.messages.pop(0)
-    
-    def _render_ui(self, screen):
-        """Render game UI"""
-        # Health bar
-        health_text = f"Health: {self.player.health}/{self.player.max_health}"
-        health_surface = self.font.render(health_text, True, (255, 255, 255))
-        screen.blit(health_surface, (10, 10))
-        
-        # Level and experience
-        level_text = f"Level: {self.player.level}"
-        level_surface = self.font.render(level_text, True, (255, 255, 255))
-        screen.blit(level_surface, (10, 50))
-        
-        exp_text = f"XP: {self.player.experience}/{self.player.experience_to_next_level}"
-        exp_surface = self.font_small.render(exp_text, True, (255, 255, 255))
-        screen.blit(exp_surface, (10, 80))
-        
-        # Score
-        score_text = f"Score: {self.score}"
-        score_surface = self.font.render(score_text, True, (255, 255, 255))
-        screen.blit(score_surface, (10, 110))
-        
-        # Game mode
-        mode_text = f"Mode: {self.game_mode.title()}"
-        mode_surface = self.font_small.render(mode_text, True, (255, 255, 255))
-        screen.blit(mode_surface, (10, 140))
-        
-        # Enemy count
-        enemy_text = f"Enemies: {len([e for e in self.enemies if e.alive])}"
-        enemy_surface = self.font_small.render(enemy_text, True, (255, 255, 255))
-        screen.blit(enemy_surface, (10, 170))
-        
-        # Controls with better colors
-        controls = [
-            "WASD: Move",
-            "SPACE: Attack",
-            "E: Pickup Items",
-            "I: Inventory",
-            "M: Map",
-            "ESC: Pause"
-        ]
-        
-        for i, control in enumerate(controls):
-            control_surface = self.font_small.render(control, True, (200, 200, 200))
-            screen.blit(control_surface, (self.settings.SCREEN_WIDTH - 200, 10 + i * 25))
-    
-    def _render_messages(self, screen):
-        """Render message log"""
-        for i, message in enumerate(self.messages):
-            message_surface = self.font_small.render(message, True, self.settings.WHITE)
-            screen.blit(message_surface, (10, self.settings.SCREEN_HEIGHT - 150 + i * 25))

@@ -52,6 +52,9 @@ class GameEngine:
                 if event.type == pygame.QUIT:
                     self.running = False
                 else:
+                    # Debug: Print event
+                    if event.type == pygame.KEYDOWN:
+                        print(f"Game engine received key: {event.key}")
                     self.states[self.current_state].handle_event(event)
             
             # Update current state

@@ -40,6 +40,7 @@ class Player(Entity):
         
         # Movement
         self.facing_direction = 0  # 0: right, 1: down, 2: left, 3: up
+        self.facing_angle = 0  # Angle in radians for dash ability
         self.is_moving = False
         
         # Animation
@@ -60,18 +61,22 @@ class Player(Entity):
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             dy = -self.speed * dt
             self.facing_direction = 3
+            self.facing_angle = -math.pi / 2  # Up
             self.is_moving = True
         elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
             dy = self.speed * dt
             self.facing_direction = 1
+            self.facing_angle = math.pi / 2  # Down
             self.is_moving = True
         elif keys[pygame.K_a] or keys[pygame.K_LEFT]:
             dx = -self.speed * dt
             self.facing_direction = 2
+            self.facing_angle = math.pi  # Left
             self.is_moving = True
         elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             dx = self.speed * dt
             self.facing_direction = 0
+            self.facing_angle = 0  # Right
             self.is_moving = True
         else:
             self.is_moving = False

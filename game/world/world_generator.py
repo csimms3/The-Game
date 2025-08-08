@@ -186,6 +186,9 @@ class WorldGenerator:
     
     def render_world(self, screen: pygame.Surface, camera_offset: Tuple[float, float]):
         """Render the world"""
+        # Debug output
+        print(f"Rendering world - Camera offset: ({camera_offset[0]:.0f}, {camera_offset[1]:.0f})")
+        
         # Calculate visible area
         screen_width = self.settings.SCREEN_WIDTH
         screen_height = self.settings.SCREEN_HEIGHT
@@ -195,7 +198,10 @@ class WorldGenerator:
         start_y = max(0, int(camera_offset[1] // self.tile_size))
         end_y = min(len(self.terrain_map), int((camera_offset[1] + screen_height) // self.tile_size) + 1)
         
+        print(f"Visible area: ({start_x}, {start_y}) to ({end_x}, {end_y})")
+        
         # Render terrain
+        tiles_rendered = 0
         for y in range(start_y, end_y):
             for x in range(start_x, end_x):
                 terrain_type = self.terrain_map[y][x]
@@ -212,6 +218,9 @@ class WorldGenerator:
                 # Draw tile border
                 pygame.draw.rect(screen, (0, 0, 0), 
                                (screen_x, screen_y, self.tile_size, self.tile_size), 1)
+                tiles_rendered += 1
+        
+        print(f"Rendered {tiles_rendered} tiles")
         
         # Render structures
         for structure in self.structures:

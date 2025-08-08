@@ -211,6 +211,10 @@ class GameState(BaseState):
     
     def handle_event(self, event):
         """Handle game events"""
+        # Debug: Print event type
+        if event.type == pygame.KEYDOWN:
+            print(f"Key pressed: {event.key}")
+        
         # Check UI menus first
         if self.quest_log_visible:
             if self._handle_quest_log_event(event):
@@ -305,6 +309,10 @@ class GameState(BaseState):
         # Update player
         self.player.update(dt)
         
+        # Debug: Print player position and input
+        keys = pygame.key.get_pressed()
+        print(f"Player at ({self.player.x:.0f}, {self.player.y:.0f}) - Keys: W:{keys[pygame.K_w]} A:{keys[pygame.K_a]} S:{keys[pygame.K_s]} D:{keys[pygame.K_d]}")
+        
         # Update camera to follow player
         self._update_camera()
         
@@ -377,43 +385,25 @@ class GameState(BaseState):
         print(f"Camera at ({self.camera_x:.0f}, {self.camera_y:.0f})")
         print(f"Enemies: {len(self.enemies)}")
         
-        # Create world surface
-        world_surface = pygame.Surface(screen.get_size())
-        world_surface.fill(self.settings.BLACK)
+        # Render world directly to screen (bypass lighting for now)
+        self.world_generator.render_world(screen, (self.camera_x, self.camera_y))
         
-        # Render world
-        self.world_generator.render_world(world_surface, (self.camera_x, self.camera_y))
+        # Debug: Ensure world is visible by adding test rectangles
+        pygame.draw.rect(screen, (255, 0, 0), (10, 10, 100, 100))  # Red test rectangle
+        pygame.draw.rect(screen, (0, 255, 0), (120, 10, 100, 100))  # Green test rectangle
+        pygame.draw.rect(screen, (255, 255, 0), (230, 10, 100, 100))  # Yellow test rectangle
         
-        # Debug: Ensure world is visible by adding a test rectangle
-        pygame.draw.rect(world_surface, (255, 0, 0), (10, 10, 100, 100))  # Red test rectangle
+        # Render player as a simple rectangle
+        player_screen_x = self.player.x - self.camera_x
+        player_screen_y = self.player.y - self.camera_y
+        pygame.draw.rect(screen, (255, 255, 255), (player_screen_x - 16, player_screen_y - 16, 32, 32))
         
-        # Debug: Add more visible elements
-        pygame.draw.rect(world_surface, (0, 255, 0), (120, 10, 100, 100))  # Green test rectangle
-        pygame.draw.rect(world_surface, (255, 255, 0), (230, 10, 100, 100))  # Yellow test rectangle
-        
-        # Render visible enemies (optimized)
-        visible_entities = self.render_optimizer.get_visible_entities()
+        # Render enemies as simple rectangles
         for enemy in self.enemies:
-            if enemy.alive and enemy in visible_entities:
-                enemy_sprite = self.renderer.sprite_sheet.get_sprite(enemy.enemy_type)
-                if enemy_sprite:
-                    self.renderer.render_entity_with_effects(world_surface, enemy_sprite,
-                                                          enemy.x - self.camera_x,
-                                                          enemy.y - self.camera_y,
-                                                          "boss" if hasattr(enemy, 'is_boss') and enemy.is_boss else "enemy")
-        
-        # Render player
-        player_sprite = self.renderer.sprite_sheet.get_sprite("player")
-        if player_sprite:
-            self.renderer.render_entity_with_effects(world_surface, player_sprite,
-                                                  self.player.x - self.camera_x,
-                                                  self.player.y - self.camera_y, "player")
-        
-        # Render particles
-        self.particle_system.render(world_surface, (self.camera_x, self.camera_y))
-        
-        # Debug: Skip lighting for now and render directly
-        screen.blit(world_surface, (0, 0))
+            if enemy.alive:
+                enemy_screen_x = enemy.x - self.camera_x
+                enemy_screen_y = enemy.y - self.camera_y
+                pygame.draw.rect(screen, (255, 0, 0), (enemy_screen_x - 12, enemy_screen_y - 12, 24, 24))
         
         # Render UI
         self._render_ui(screen)
@@ -538,6 +528,9 @@ class GameState(BaseState):
         # Clamp camera to world bounds
         self.camera_x = max(0, min(self.camera_x, self.world_generator.world_width - self.settings.SCREEN_WIDTH))
         self.camera_y = max(0, min(self.camera_y, self.world_generator.world_height - self.settings.SCREEN_HEIGHT))
+        
+        # Debug: Print camera position
+        print(f"Camera: ({self.camera_x:.0f}, {self.camera_y:.0f}) -> Target: ({target_x:.0f}, {target_y:.0f})")
     
     def _update_enemies(self, dt: float):
         """Update all enemies"""

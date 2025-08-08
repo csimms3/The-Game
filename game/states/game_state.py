@@ -369,6 +369,14 @@ class GameState(BaseState):
     
     def render(self, screen):
         """Render the game with advanced graphics"""
+        # Debug: Fill screen with a visible color first
+        screen.fill((50, 100, 150))  # Blue background for debugging
+        
+        # Debug output
+        print(f"Rendering game state - Player at ({self.player.x:.0f}, {self.player.y:.0f})")
+        print(f"Camera at ({self.camera_x:.0f}, {self.camera_y:.0f})")
+        print(f"Enemies: {len(self.enemies)}")
+        
         # Create world surface
         world_surface = pygame.Surface(screen.get_size())
         world_surface.fill(self.settings.BLACK)
@@ -378,6 +386,10 @@ class GameState(BaseState):
         
         # Debug: Ensure world is visible by adding a test rectangle
         pygame.draw.rect(world_surface, (255, 0, 0), (10, 10, 100, 100))  # Red test rectangle
+        
+        # Debug: Add more visible elements
+        pygame.draw.rect(world_surface, (0, 255, 0), (120, 10, 100, 100))  # Green test rectangle
+        pygame.draw.rect(world_surface, (255, 255, 0), (230, 10, 100, 100))  # Yellow test rectangle
         
         # Render visible enemies (optimized)
         visible_entities = self.render_optimizer.get_visible_entities()
@@ -400,8 +412,8 @@ class GameState(BaseState):
         # Render particles
         self.particle_system.render(world_surface, (self.camera_x, self.camera_y))
         
-        # Apply lighting
-        self.renderer.render_world_with_lighting(screen, world_surface, (0, 0))
+        # Debug: Skip lighting for now and render directly
+        screen.blit(world_surface, (0, 0))
         
         # Render UI
         self._render_ui(screen)

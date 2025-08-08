@@ -58,7 +58,7 @@ class GameEngine:
             self.states[self.current_state].update(dt)
             
             # Render current state
-            self.screen.fill(self.settings.BLACK)
+            # self.screen.fill(self.settings.BLACK)  # Removed this line that was causing black screen
             self.states[self.current_state].render(self.screen)
             
             # Update display

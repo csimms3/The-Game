@@ -15,6 +15,10 @@ class Enemy(Entity):
     def __init__(self, x: float, y: float, settings: Settings, enemy_type: str = "basic"):
         super().__init__(x, y, settings)
         
+        # Make enemies larger
+        self.width = 48  # Increased from 32
+        self.height = 48  # Increased from 32
+        
         self.enemy_type = enemy_type
         self.speed = settings.ENEMY_SPEED
         
@@ -60,9 +64,16 @@ class Enemy(Entity):
         else:  # basic
             self.sprite.fill(self.settings.RED)
         
-        # Add border
+        # Add border and details
         pygame.draw.rect(self.sprite, self.settings.WHITE, 
                         (2, 2, self.width - 4, self.height - 4))
+        
+        # Add eyes
+        eye_size = 4
+        pygame.draw.circle(self.sprite, self.settings.BLACK, 
+                         (self.width // 3, self.height // 3), eye_size)
+        pygame.draw.circle(self.sprite, self.settings.BLACK, 
+                         (2 * self.width // 3, self.height // 3), eye_size)
     
     def update(self, dt: float):
         """Update enemy AI and behavior"""

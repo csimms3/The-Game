@@ -23,7 +23,7 @@ class Renderer:
         
         # Visual effects
         self.screen_shake = 0
-        self.fade_alpha = 255
+        self.fade_alpha = 0  # Start with no fade overlay
         self.fade_direction = 1  # 1 for fade in, -1 for fade out
         
         # Post-processing effects

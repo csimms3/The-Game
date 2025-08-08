@@ -69,15 +69,16 @@ class GameState(BaseState):
         self.weather_state = "clear"
         self.weather_timer = 0
         
-        # Player stats
+        # Combat
+        self.combat_cooldown = 0
         self.player_mana = 100
         self.player_max_mana = 100
-        self.mana_regen_rate = 2.0
+        self.mana_regen_rate = 5.0  # mana per second
         self.spell_cooldowns = {}
         self.special_abilities = {
             'dash': {'cooldown': 0, 'max_cooldown': 3.0},
-            'shield': {'cooldown': 0, 'max_cooldown': 5.0},
-            'rage': {'cooldown': 0, 'max_cooldown': 10.0}
+            'shield': {'cooldown': 0, 'max_cooldown': 10.0},
+            'rage': {'cooldown': 0, 'max_cooldown': 15.0}
         }
         self.player_gold = 0
         self.player_skills = {
@@ -370,14 +371,12 @@ class GameState(BaseState):
         # Render player as a simple rectangle
         player_screen_x = self.player.x - self.camera_x
         player_screen_y = self.player.y - self.camera_y
-        pygame.draw.rect(screen, (255, 255, 255), (player_screen_x - 16, player_screen_y - 16, 32, 32))
+        pygame.draw.rect(screen, (255, 255, 255), (player_screen_x - 24, player_screen_y - 24, 48, 48))
         
-        # Render enemies as simple rectangles
+        # Render enemies using their sprites
         for enemy in self.enemies:
             if enemy.alive:
-                enemy_screen_x = enemy.x - self.camera_x
-                enemy_screen_y = enemy.y - self.camera_y
-                pygame.draw.rect(screen, (255, 0, 0), (enemy_screen_x - 12, enemy_screen_y - 12, 24, 24))
+                enemy.render(screen, (self.camera_x, self.camera_y))
         
         # Render UI
         self._render_ui(screen)
@@ -404,10 +403,10 @@ class GameState(BaseState):
             self._render_trading_menu(screen)
         
         # Apply post-processing
-        # self.renderer.apply_post_processing(screen)  # Temporarily disabled
+        self.renderer.apply_post_processing(screen)
         
         # Render fade overlay
-        # self.renderer.render_fade_overlay(screen)  # Temporarily disabled
+        self.renderer.render_fade_overlay(screen)
     
     def _render_ui(self, screen):
         """Render the game UI"""
@@ -545,6 +544,17 @@ class GameState(BaseState):
         x = random.randint(0, self.world_generator.world_width)
         y = random.randint(0, self.world_generator.world_height)
         enemy = Enemy(x, y, self.settings)
+        
+        # Give enemy patrol points around spawn location
+        patrol_radius = 100
+        patrol_points = [
+            (x + patrol_radius, y),
+            (x, y + patrol_radius),
+            (x - patrol_radius, y),
+            (x, y - patrol_radius)
+        ]
+        enemy.set_patrol_points(patrol_points)
+        
         self.enemies.append(enemy)
         self.render_optimizer.add_entity(enemy)
     
@@ -556,6 +566,17 @@ class GameState(BaseState):
         enemy_types = ["warrior", "archer", "mage", "assassin"]
         enemy_type = random.choice(enemy_types)
         enemy = EliteEnemy(x, y, self.settings, enemy_type)
+        
+        # Give elite enemy patrol points
+        patrol_radius = 150
+        patrol_points = [
+            (x + patrol_radius, y),
+            (x, y + patrol_radius),
+            (x - patrol_radius, y),
+            (x, y - patrol_radius)
+        ]
+        enemy.set_patrol_points(patrol_points)
+        
         self.enemies.append(enemy)
         self.render_optimizer.add_entity(enemy)
         self._add_message(f"Elite {enemy_type.title()} appeared!")
@@ -568,6 +589,17 @@ class GameState(BaseState):
         boss_types = ["dragon", "lich", "golem"]
         boss_type = random.choice(boss_types)
         boss = BossEnemy(x, y, self.settings, boss_type)
+        
+        # Give boss patrol points
+        patrol_radius = 200
+        patrol_points = [
+            (x + patrol_radius, y),
+            (x, y + patrol_radius),
+            (x - patrol_radius, y),
+            (x, y - patrol_radius)
+        ]
+        boss.set_patrol_points(patrol_points)
+        
         self.enemies.append(boss)
         self.render_optimizer.add_entity(boss)
         self._add_message(f"BOSS {boss_type.upper()} has appeared!")

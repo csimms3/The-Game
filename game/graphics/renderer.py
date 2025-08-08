@@ -68,6 +68,10 @@ class Renderer:
         """Clear all light sources"""
         self.light_sources.clear()
     
+    def set_ambient_light(self, intensity: float):
+        """Set the ambient light intensity (0.0 to 1.0)"""
+        self.ambient_light = max(0.0, min(1.0, intensity))
+    
     def render_world_with_lighting(self, screen: pygame.Surface, world_surface: pygame.Surface, 
                                  camera_offset: Tuple[float, float]):
         """Render the world with dynamic lighting"""

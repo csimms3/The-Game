@@ -42,6 +42,10 @@ class UISystem:
     
     def _create_fonts(self) -> Dict[str, pygame.font.Font]:
         """Create font hierarchy"""
+        # Initialize pygame.font if not already done
+        if not pygame.font.get_init():
+            pygame.font.init()
+        
         return {
             'title': pygame.font.Font(None, 48),
             'heading': pygame.font.Font(None, 32),

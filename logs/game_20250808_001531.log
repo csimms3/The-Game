@@ -1,0 +1,4 @@
+2025-08-08 00:15:31,306 - the_game - INFO - Starting The Game - Roguelike Adventure
+2025-08-08 00:15:31,984 - the_game - INFO - Game engine initialized
+2025-08-08 00:15:31,984 - the_game - INFO - Starting game loop
+2025-08-08 00:15:33,513 - the_game - ERROR - Game crashed with error: 'Settings' object has no attribute 'MODE_CAMPAIGN'

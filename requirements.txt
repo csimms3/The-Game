@@ -1,5 +1,5 @@
-pygame==2.5.2
-numpy==1.24.3
-noise==1.2.2
+pygame>=2.5.0
+numpy>=1.24.0
+noise>=1.2.0
 pytmx==3.32
 pyscroll==2.30

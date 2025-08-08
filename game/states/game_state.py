@@ -251,34 +251,34 @@ class GameState(BaseState):
         """Render game UI"""
         # Health bar
         health_text = f"Health: {self.player.health}/{self.player.max_health}"
-        health_surface = self.font.render(health_text, True, self.settings.WHITE)
+        health_surface = self.font.render(health_text, True, (255, 255, 255))
         screen.blit(health_surface, (10, 10))
         
         # Level and experience
         level_text = f"Level: {self.player.level}"
-        level_surface = self.font.render(level_text, True, self.settings.WHITE)
+        level_surface = self.font.render(level_text, True, (255, 255, 255))
         screen.blit(level_surface, (10, 50))
         
         exp_text = f"XP: {self.player.experience}/{self.player.experience_to_next_level}"
-        exp_surface = self.font_small.render(exp_text, True, self.settings.WHITE)
+        exp_surface = self.font_small.render(exp_text, True, (255, 255, 255))
         screen.blit(exp_surface, (10, 80))
         
         # Score
         score_text = f"Score: {self.score}"
-        score_surface = self.font.render(score_text, True, self.settings.WHITE)
+        score_surface = self.font.render(score_text, True, (255, 255, 255))
         screen.blit(score_surface, (10, 110))
         
         # Game mode
         mode_text = f"Mode: {self.game_mode.title()}"
-        mode_surface = self.font_small.render(mode_text, True, self.settings.WHITE)
+        mode_surface = self.font_small.render(mode_text, True, (255, 255, 255))
         screen.blit(mode_surface, (10, 140))
         
         # Enemy count
         enemy_text = f"Enemies: {len([e for e in self.enemies if e.alive])}"
-        enemy_surface = self.font_small.render(enemy_text, True, self.settings.WHITE)
+        enemy_surface = self.font_small.render(enemy_text, True, (255, 255, 255))
         screen.blit(enemy_surface, (10, 170))
         
-        # Controls
+        # Controls with better colors
         controls = [
             "WASD: Move",
             "SPACE: Attack",
@@ -289,7 +289,7 @@ class GameState(BaseState):
         ]
         
         for i, control in enumerate(controls):
-            control_surface = self.font_small.render(control, True, self.settings.GRAY)
+            control_surface = self.font_small.render(control, True, (200, 200, 200))
             screen.blit(control_surface, (self.settings.SCREEN_WIDTH - 200, 10 + i * 25))
     
     def _render_messages(self, screen):

@@ -84,25 +84,38 @@ class MenuState(BaseState):
         screen.blit(title_text, title_rect)
         
         # Draw subtitle
-        subtitle_text = self.font_small.render("Roguelike Adventure", True, self.settings.LIGHT_GRAY)
+        subtitle_text = self.font_small.render("Roguelike Adventure", True, self.settings.WHITE)
         subtitle_rect = subtitle_text.get_rect(center=(self.settings.SCREEN_WIDTH // 2, self.title_y + 80))
         screen.blit(subtitle_text, subtitle_rect)
         
         # Draw menu options
         menu_y = 300
         for i, option in enumerate(self.options):
-            color = self.settings.WHITE if i == self.selected_option else self.settings.GRAY
+            # Use bright colors for better readability
+            if i == self.selected_option:
+                color = (255, 255, 0)  # Bright yellow for selected
+                bg_color = (100, 100, 100)  # Dark gray background
+            else:
+                color = (200, 200, 200)  # Light gray for unselected
+                bg_color = None
+            
             text = self.font_medium.render(option, True, color)
             rect = text.get_rect(center=(self.settings.SCREEN_WIDTH // 2, menu_y + i * 60))
             
+            # Draw background for selected option
+            if bg_color:
+                bg_rect = pygame.Rect(rect.left - 10, rect.top - 5, rect.width + 20, rect.height + 10)
+                pygame.draw.rect(screen, bg_color, bg_rect)
+                pygame.draw.rect(screen, self.settings.WHITE, bg_rect, 2)
+            
             # Draw selection indicator
             if i == self.selected_option:
-                indicator_rect = pygame.Rect(rect.left - 20, rect.centery - 2, 10, 4)
-                pygame.draw.rect(screen, self.settings.WHITE, indicator_rect)
+                indicator_rect = pygame.Rect(rect.left - 30, rect.centery - 3, 15, 6)
+                pygame.draw.rect(screen, (255, 255, 0), indicator_rect)
             
             screen.blit(text, rect)
         
-        # Draw instructions
+        # Draw instructions with better colors
         instructions = [
             "Use ↑↓ to navigate",
             "Press ENTER to select",
@@ -110,7 +123,7 @@ class MenuState(BaseState):
         ]
         
         for i, instruction in enumerate(instructions):
-            text = self.font_small.render(instruction, True, self.settings.DARK_GRAY)
+            text = self.font_small.render(instruction, True, (255, 255, 255))
             rect = text.get_rect(center=(self.settings.SCREEN_WIDTH // 2, 
                                        self.settings.SCREEN_HEIGHT - 100 + i * 30))
             screen.blit(text, rect)
